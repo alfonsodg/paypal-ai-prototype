@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     openai_api_key: str
+    openai_base_url: str | None = None
     llm_model: str = "gpt-4o-mini"
     paypal_client_id: str
     paypal_client_secret: str
