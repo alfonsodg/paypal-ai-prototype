@@ -34,6 +34,9 @@ export default function Dashboard({ refreshKey }) {
               <td>{inv.number}</td>
               <td>{inv.status}</td>
               <td>{inv.total}</td>
+              <td>
+                <a href={`http://localhost:8000/api/v1/invoices/${inv.id}/pdf`} target="_blank" rel="noreferrer">PDF</a>
+              </td>
             </tr>
           ))}
         </tbody>

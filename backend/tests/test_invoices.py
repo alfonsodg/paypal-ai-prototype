@@ -9,6 +9,8 @@ os.environ.setdefault("OPENAI_API_KEY", "test-key")
 os.environ.setdefault("PAYPAL_CLIENT_ID", "test")
 os.environ.setdefault("PAYPAL_CLIENT_SECRET", "test")
 os.environ.setdefault("SECRET_KEY", "test-secret")
+os.environ.setdefault("FRONTEND_URL", "http://localhost:5173")
+os.environ.setdefault("BACKEND_URL", "http://localhost:8000")
 
 from app.db import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402

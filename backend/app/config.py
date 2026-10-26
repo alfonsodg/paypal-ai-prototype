@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     smtp_from: str = ""
     database_url: str = "sqlite:///./data/app.db"
     secret_key: str
-    frontend_url: str = "http://localhost:5173"
-    backend_url: str = "http://localhost:8000"
+    frontend_url: str
+    backend_url: str
     enable_scheduler: bool = False
 
 

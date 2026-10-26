@@ -11,7 +11,8 @@ router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
 def paypal_webhook(payload: dict, db: Session = Depends(get_db)) -> dict:
     # Minimal: look up invoice by paypal_invoice_id in resource and mark paid
     resource = payload.get("resource", {}) if isinstance(payload, dict) else {}
-    paypal_id = resource.get("id") or payload.get("invoice_id")
+    paypal_id = resource.get("id") if isinstance(resource, dict) else None
+    paypal_id = paypal_id or payload.get("invoice_id")
     invoice = None
     if paypal_id:
         invoice = db.query(Invoice).filter(Invoice.paypal_invoice_id == paypal_id).first()
