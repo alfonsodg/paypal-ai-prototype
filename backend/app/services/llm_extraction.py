@@ -22,6 +22,14 @@ def _client():
 
 
 def extract_invoice(text: str) -> dict[str, Any]:
+    if settings.mock_llm:
+        return {
+            "client_name": "Juan",
+            "client_email": "juan@example.com",
+            "currency": "USD",
+            "tax_rate": 0.18,
+            "items": [{"description": "Consultoria", "quantity": 5, "unit_price": 50.0}],
+        }
     resp = _client().chat.completions.create(
         model=settings.llm_model,
         messages=[
