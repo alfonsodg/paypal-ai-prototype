@@ -23,6 +23,19 @@ npm install
 npm run dev
 ```
 
+## LLM provider
+
+Default uses OpenDesign (`https://amr-link.open-design.ai/v1`, model `gpt-6-luna`).
+Set `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `LLM_MODEL` in `.env`.
+Any OpenAI-compatible endpoint works.
+
+## PayPal setup
+
+1. Create a sandbox app at <https://developer.paypal.com/dashboard/applications/sandbox>
+2. Copy Client ID and Secret to `.env` (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`)
+3. Set `PAYPAL_MODE=sandbox`
+4. (Optional) Configure webhook and set `PAYPAL_WEBHOOK_ID`
+
 ## License
 
 MIT — see LICENSE.
