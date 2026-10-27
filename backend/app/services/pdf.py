@@ -3,7 +3,8 @@ from io import BytesIO
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
 def generate_invoice_pdf(data: dict) -> bytes:
@@ -49,6 +50,17 @@ def generate_invoice_pdf(data: dict) -> bytes:
     if data.get("payment_link"):
         story.append(Spacer(1, 12))
         story.append(Paragraph(f"Pay here: {data['payment_link']}", styles["Normal"]))
+        try:
+            import qrcode
+
+            qr = qrcode.make(data["payment_link"])
+            buf_qr = BytesIO()
+            qr.save(buf_qr, format="PNG")
+            buf_qr.seek(0)
+            story.append(Spacer(1, 6))
+            story.append(Image(ImageReader(buf_qr), width=120, height=120))
+        except Exception:
+            pass
 
     doc.build(story)
     return buf.getvalue()

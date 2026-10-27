@@ -8,6 +8,7 @@ from .routers.analytics import router as analytics_router
 from .routers.cashflow import router as cashflow_router
 from .routers.extraction import router as extraction_router
 from .routers.invoices import router as invoices_router
+from .routers.queries import router as queries_router
 from .routers.webhooks import router as webhooks_router
 
 Base.metadata.create_all(bind=engine)
@@ -27,6 +28,7 @@ app.include_router(extraction_router)
 app.include_router(webhooks_router)
 app.include_router(cashflow_router)
 app.include_router(analytics_router)
+app.include_router(queries_router)
 
 
 @app.on_event("startup")

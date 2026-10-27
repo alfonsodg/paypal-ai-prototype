@@ -32,6 +32,7 @@ class InvoiceOut(BaseModel):
     subtotal: float
     tax: float
     total: float
+    late_fee: float = 0.0
     status: str
     due_date: Optional[datetime] = None
     payment_link: Optional[str] = None

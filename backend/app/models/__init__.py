@@ -50,6 +50,18 @@ class Invoice(Base):
     payment_link: Mapped[str | None] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
+    @property
+    def late_fee(self) -> float:
+        from ..config import settings
+
+        if self.status != InvoiceStatus.overdue or not self.due_date:
+            return 0.0
+        days_overdue = (datetime.utcnow() - self.due_date).days
+        if days_overdue <= 0:
+            return 0.0
+        months = max(1, days_overdue // 30)
+        return round(self.total * settings.late_fee_rate * months, 2)
+
     client: Mapped[Client] = relationship(back_populates="invoices")
     items: Mapped[list["LineItem"]] = relationship(
         back_populates="invoice", cascade="all, delete-orphan"

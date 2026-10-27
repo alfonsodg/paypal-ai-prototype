@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     frontend_url: str
     backend_url: str
     enable_scheduler: bool = False
+    late_fee_rate: float = 0.05
 
 
 settings = Settings()  # type: ignore[call-arg]

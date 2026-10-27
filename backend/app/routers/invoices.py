@@ -1,7 +1,9 @@
+import csv
+import io
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
 
 from ..db import get_db
@@ -57,8 +59,38 @@ def create_invoice(payload: InvoiceCreate, db: Session = Depends(get_db)) -> Inv
 
 
 @router.get("", response_model=list[InvoiceOut])
-def list_invoices(db: Session = Depends(get_db)) -> list[Invoice]:
-    return db.query(Invoice).order_by(Invoice.created_at.desc()).all()
+def list_invoices(
+    status: str | None = None,
+    client: str | None = None,
+    search: str | None = None,
+    min_amount: float | None = None,
+    max_amount: float | None = None,
+    db: Session = Depends(get_db),
+) -> list[Invoice]:
+    q = db.query(Invoice)
+    if status:
+        q = q.filter(Invoice.status == status)
+    if client:
+        q = q.join(Invoice.client).filter(Client.name.ilike(f"%{client}%"))
+    if search:
+        q = q.filter(Invoice.number.ilike(f"%{search}%"))
+    if min_amount is not None:
+        q = q.filter(Invoice.total >= min_amount)
+    if max_amount is not None:
+        q = q.filter(Invoice.total <= max_amount)
+    return q.order_by(Invoice.created_at.desc()).all()
+
+
+@router.get("/export/csv")
+def export_csv(db: Session = Depends(get_db)) -> StreamingResponse:
+    invoices = db.query(Invoice).order_by(Invoice.created_at.desc()).all()
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["number", "client", "status", "currency", "subtotal", "tax", "total", "created_at"])
+    for inv in invoices:
+        writer.writerow([inv.number, inv.client.name, inv.status.value, inv.currency, inv.subtotal, inv.tax, inv.total, inv.created_at])
+    buf.seek(0)
+    return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=invoices.csv"})
 
 
 @router.get("/{invoice_id}", response_model=InvoiceOut)
