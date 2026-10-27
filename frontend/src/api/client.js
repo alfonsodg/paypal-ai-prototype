@@ -31,3 +31,9 @@ export async function getMetrics() {
   if (!r.ok) throw new Error('metrics failed')
   return r.json()
 }
+
+export async function getAnalytics() {
+  const r = await fetch(`${BASE}/api/v1/analytics`)
+  if (!r.ok) throw new Error('analytics failed')
+  return r.json()
+}

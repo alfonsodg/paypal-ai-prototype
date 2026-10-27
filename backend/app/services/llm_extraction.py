@@ -47,3 +47,27 @@ def extract_invoice(text: str) -> dict[str, Any]:
     data.setdefault("tax_rate", 0.0)
     data.setdefault("client_email", None)
     return data
+
+
+def generate_reminder_message(client_name: str, invoice_number: str, total: float, risk_score: float) -> str:
+    if settings.mock_llm:
+        return f"Hi {client_name}, friendly reminder: invoice {invoice_number} for \${total:.2f} is pending. Please pay at your earliest convenience."
+    from openai import OpenAI
+
+    kwargs = {"api_key": settings.openai_api_key}
+    if settings.openai_base_url:
+        kwargs["base_url"] = settings.openai_base_url
+    client = OpenAI(**kwargs)
+    prompt = (
+        f"Write a short, polite payment reminder email body for client {client_name} "
+        f"regarding invoice {invoice_number} totaling \${total:.2f}. "
+        f"Risk score (0-1, higher=more likely late): {risk_score}. "
+        "Adapt tone: friendly if low risk, firm but respectful if high risk. "
+        "Max 3 sentences. No subject line."
+    )
+    resp = client.chat.completions.create(
+        model=settings.llm_model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.4,
+    )
+    return (resp.choices[0].message.content or "").strip()

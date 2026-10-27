@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .db import Base, engine
 from .jobs.scheduler import start_scheduler, stop_scheduler
+from .routers.analytics import router as analytics_router
 from .routers.cashflow import router as cashflow_router
 from .routers.extraction import router as extraction_router
 from .routers.invoices import router as invoices_router
@@ -25,6 +26,7 @@ app.include_router(invoices_router)
 app.include_router(extraction_router)
 app.include_router(webhooks_router)
 app.include_router(cashflow_router)
+app.include_router(analytics_router)
 
 
 @app.on_event("startup")

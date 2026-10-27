@@ -8,8 +8,10 @@ from ..db import get_db
 from ..models import Client, Invoice, InvoiceStatus, LineItem
 from ..schemas import InvoiceCreate, InvoiceOut
 from ..services.email import send_invoice_email
+from ..services.llm_extraction import generate_reminder_message
 from ..services.pdf import generate_invoice_pdf
 from ..services.paypal import create_paypal_invoice
+from ..services.risk import client_risk_score
 
 router = APIRouter(prefix="/api/v1/invoices", tags=["invoices"])
 
@@ -144,10 +146,12 @@ def remind(invoice_id: int, db: Session = Depends(get_db)) -> dict:
             "payment_link": invoice.payment_link,
         }
     )
+    risk = client_risk_score(db, invoice.client_id)
+    message = generate_reminder_message(invoice.client.name, invoice.number, invoice.total, risk)
     send_invoice_email(
         invoice.client.email,
         f"Reminder: Invoice {invoice.number}",
-        f"Please pay invoice {invoice.number}. Total: {invoice.total}. {invoice.payment_link or ''}",
+        f"{message}\n\nPay here: {invoice.payment_link or ''}",
         pdf,
     )
-    return {"status": "sent"}
+    return {"status": "sent", "risk_score": risk}
