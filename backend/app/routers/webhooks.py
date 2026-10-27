@@ -16,6 +16,11 @@ def paypal_webhook(payload: dict, db: Session = Depends(get_db)) -> dict:
     invoice = None
     if paypal_id:
         invoice = db.query(Invoice).filter(Invoice.paypal_invoice_id == paypal_id).first()
+        if invoice is None:
+            try:
+                invoice = db.query(Invoice).filter(Invoice.id == int(paypal_id)).first()
+            except (ValueError, TypeError):
+                invoice = None
     if invoice is None:
         raise HTTPException(status_code=404, detail="Invoice not found")
     event_type = payload.get("event_type", "")

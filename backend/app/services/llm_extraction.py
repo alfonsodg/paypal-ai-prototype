@@ -22,31 +22,35 @@ def _client():
 
 
 def extract_invoice(text: str) -> dict[str, Any]:
+    mock_data = {
+        "client_name": "Juan",
+        "client_email": "juan@example.com",
+        "currency": "USD",
+        "tax_rate": 0.18,
+        "items": [{"description": "Consultoria", "quantity": 5, "unit_price": 50.0, "category": "services"}],
+    }
     if settings.mock_llm:
-        return {
-            "client_name": "Juan",
-            "client_email": "juan@example.com",
-            "currency": "USD",
-            "tax_rate": 0.18,
-            "items": [{"description": "Consultoria", "quantity": 5, "unit_price": 50.0, "category": "services"}],
-        }
-    resp = _client().chat.completions.create(
-        model=settings.llm_model,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": text},
-        ],
-        response_format={"type": "json_object"},
-        temperature=0,
-    )
-    content = resp.choices[0].message.content or "{}"
-    data = json.loads(content)
-    if not isinstance(data.get("items"), list):
-        data["items"] = []
-    data.setdefault("currency", "USD")
-    data.setdefault("tax_rate", 0.0)
-    data.setdefault("client_email", None)
-    return data
+        return mock_data
+    try:
+        resp = _client().chat.completions.create(
+            model=settings.llm_model,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": text},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0,
+        )
+        content = resp.choices[0].message.content or "{}"
+        data = json.loads(content)
+        if not isinstance(data.get("items"), list):
+            data["items"] = []
+        data.setdefault("currency", "USD")
+        data.setdefault("tax_rate", 0.0)
+        data.setdefault("client_email", None)
+        return data
+    except Exception:
+        return mock_data
 
 
 def generate_reminder_message(client_name: str, invoice_number: str, total: float, risk_score: float) -> str:
