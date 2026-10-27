@@ -25,7 +25,7 @@ npm run dev
 
 ## LLM provider
 
-Default uses OpenDesign (`https://amr-link.open-design.ai/v1`, model `gpt-6-luna`).
+Default uses OpenDesign (`https://amr-link.open-design.ai/v1`, model `deepseek-v4.1-flash`).
 Set `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `LLM_MODEL` in `.env`.
 Any OpenAI-compatible endpoint works.
 
