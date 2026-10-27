@@ -7,13 +7,14 @@ from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import Client, Invoice, InvoiceStatus, LineItem
+from ..models import AuditLog, Client, Invoice, InvoiceStatus, LineItem
 from ..schemas import InvoiceCreate, InvoiceOut
 from ..services.email import send_invoice_email
 from ..services.llm_extraction import generate_reminder_message
 from ..services.pdf import generate_invoice_pdf
 from ..services.paypal import create_paypal_invoice
 from ..services.risk import client_risk_score
+from ..services.webhooks_out import notify
 
 router = APIRouter(prefix="/api/v1/invoices", tags=["invoices"])
 
@@ -37,6 +38,7 @@ def create_invoice(payload: InvoiceCreate, db: Session = Depends(get_db)) -> Inv
         client_id=client.id,
         number=f"INV-{uuid.uuid4().hex[:8].upper()}",
         currency=payload.currency,
+        exchange_rate=payload.exchange_rate,
         subtotal=round(subtotal, 2),
         tax=tax,
         total=total,
@@ -55,6 +57,9 @@ def create_invoice(payload: InvoiceCreate, db: Session = Depends(get_db)) -> Inv
     db.add(invoice)
     db.commit()
     db.refresh(invoice)
+    db.add(AuditLog(entity="invoice", entity_id=invoice.id, action="created", details=f"number={invoice.number} total={invoice.total}"))
+    db.commit()
+    notify("invoice.created", {"id": invoice.id, "number": invoice.number, "total": invoice.total, "status": invoice.status.value})
     return invoice
 
 

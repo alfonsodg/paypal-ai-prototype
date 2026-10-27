@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     backend_url: str
     enable_scheduler: bool = False
     late_fee_rate: float = 0.05
+    outgoing_webhook_url: str = ""
 
 
 settings = Settings()  # type: ignore[call-arg]

@@ -19,6 +19,7 @@ class InvoiceCreate(BaseModel):
     client_name: str
     client_email: EmailStr
     currency: str = "USD"
+    exchange_rate: float = 1.0
     tax_rate: float = 0.0
     due_date: Optional[datetime] = None
     items: List[LineItemIn] = Field(default_factory=list)
@@ -29,6 +30,7 @@ class InvoiceOut(BaseModel):
     number: str
     client_id: int
     currency: str
+    exchange_rate: float = 1.0
     subtotal: float
     tax: float
     total: float
