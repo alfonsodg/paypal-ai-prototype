@@ -1,17 +1,29 @@
 import { useEffect, useState } from 'react'
-import { getAnalytics, getMetrics, listInvoices } from '../api/client.js'
+import { getAnalytics, getMetrics, listInvoices, queryInvoices } from '../api/client.js'
 import { t } from '../i18n.js'
 
 export default function Dashboard({ refreshKey, lang = 'es' }) {
   const [invoices, setInvoices] = useState([])
   const [metrics, setMetrics] = useState(null)
   const [analytics, setAnalytics] = useState(null)
+  const [query, setQuery] = useState('')
+  const [queryResults, setQueryResults] = useState(null)
 
   useEffect(() => {
     listInvoices().then(setInvoices).catch(() => {})
     getMetrics().then(setMetrics).catch(() => {})
     getAnalytics().then(setAnalytics).catch(() => {})
   }, [refreshKey])
+
+  const handleQuery = async () => {
+    if (!query.trim()) { setQueryResults(null); return }
+    try {
+      const r = await queryInvoices(query)
+      setQueryResults(r)
+    } catch (e) {
+      setQueryResults([])
+    }
+  }
 
   const maxBilled = analytics
     ? Math.max(1, ...analytics.revenue_by_month.map((m) => m.billed))
@@ -54,6 +66,17 @@ export default function Dashboard({ refreshKey, lang = 'es' }) {
           </ul>
         </div>
       )}
+      <div style={{ marginBottom: 16 }}>
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask: unpaid invoices from last month" style={{ width: '70%' }} />
+        <button onClick={handleQuery} style={{ marginLeft: 8 }}>Query</button>
+        {queryResults && (
+          <ul>
+            {queryResults.map((r) => (
+              <li key={r.id}>{r.number} - {r.status} - {r.total} ({r.client})</li>
+            ))}
+          </ul>
+        )}
+      </div>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
