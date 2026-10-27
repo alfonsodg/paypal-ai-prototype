@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     enable_scheduler: bool = False
     late_fee_rate: float = 0.05
     outgoing_webhook_url: str = ""
+    slack_webhook_url: str = ""
+    company_name: str = "My Company"
+    brand_color: str = "#1d76db"
+    invoice_terms: str = "Payment due within 30 days."
 
 
 settings = Settings()  # type: ignore[call-arg]

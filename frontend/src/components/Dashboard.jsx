@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getAnalytics, getMetrics, listInvoices } from '../api/client.js'
+import { t } from '../i18n.js'
 
-export default function Dashboard({ refreshKey }) {
+export default function Dashboard({ refreshKey, lang = 'es' }) {
   const [invoices, setInvoices] = useState([])
   const [metrics, setMetrics] = useState(null)
   const [analytics, setAnalytics] = useState(null)
@@ -18,18 +19,18 @@ export default function Dashboard({ refreshKey }) {
 
   return (
     <section>
-      <h2>Dashboard</h2>
+      <h2>{t(lang, 'dashboard')}</h2>
       {metrics && (
         <div style={{ marginBottom: 12 }}>
-          <strong>Billed:</strong> {metrics.total_billed}{' '}
-          <strong>Paid:</strong> {metrics.total_paid}{' '}
-          <strong>Pending:</strong> {metrics.total_pending}
-          {' '}<strong>Avg days to pay:</strong> {analytics ? analytics.avg_days_to_pay : '-'}
+          <strong>{t(lang, 'billed')}:</strong> {metrics.total_billed}{' '}
+          <strong>{t(lang, 'paid')}:</strong> {metrics.total_paid}{' '}
+          <strong>{t(lang, 'pending')}:</strong> {metrics.total_pending}
+          {' '}<strong>{t(lang, 'avgDays')}:</strong> {analytics ? analytics.avg_days_to_pay : '-'}
         </div>
       )}
       {analytics && analytics.revenue_by_month.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <h3>Revenue by month</h3>
+          <h3>{t(lang, 'revenueByMonth')}</h3>
           <svg width="100%" height="120" viewBox={`0 0 ${analytics.revenue_by_month.length * 40} 120`}>
             {analytics.revenue_by_month.map((m, i) => {
               const h = (m.billed / maxBilled) * 100
@@ -45,7 +46,7 @@ export default function Dashboard({ refreshKey }) {
       )}
       {analytics && analytics.top_clients.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <h3>Top clients</h3>
+          <h3>{t(lang, 'topClients')}</h3>
           <ul>
             {analytics.top_clients.map((c) => (
               <li key={c.name}>{c.name}: {c.total} ({c.count} invoices)</li>

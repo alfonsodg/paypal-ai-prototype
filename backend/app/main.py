@@ -5,6 +5,7 @@ from .config import settings
 from .db import Base, engine
 from .jobs.scheduler import start_scheduler, stop_scheduler
 from .routers.analytics import router as analytics_router
+from .routers.clients import router as clients_router
 from .routers.audit import router as audit_router
 from .routers.cashflow import router as cashflow_router
 from .routers.extraction import router as extraction_router
@@ -30,6 +31,7 @@ app.include_router(webhooks_router)
 app.include_router(cashflow_router)
 app.include_router(analytics_router)
 app.include_router(audit_router)
+app.include_router(clients_router)
 app.include_router(queries_router)
 
 

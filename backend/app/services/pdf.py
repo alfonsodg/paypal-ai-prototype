@@ -1,5 +1,6 @@
 from io import BytesIO
 
+from ..config import settings
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
@@ -13,6 +14,7 @@ def generate_invoice_pdf(data: dict) -> bytes:
     styles = getSampleStyleSheet()
     story = []
 
+    story.append(Paragraph(settings.company_name, styles["Heading2"]))
     story.append(Paragraph(f"Invoice {data.get('number', '')}", styles["Title"]))
     story.append(Spacer(1, 12))
 
@@ -46,6 +48,9 @@ def generate_invoice_pdf(data: dict) -> bytes:
         )
     )
     story.append(table)
+
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(settings.invoice_terms, styles["Italic"]))
 
     if data.get("payment_link"):
         story.append(Spacer(1, 12))

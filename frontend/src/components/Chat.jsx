@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { createInvoice, extractInvoice } from '../api/client.js'
+import { t } from '../i18n.js'
 
-export default function Chat({ onCreated }) {
+export default function Chat({ onCreated, lang = 'es' }) {
   const [text, setText] = useState('')
   const [extracted, setExtracted] = useState(null)
   const [status, setStatus] = useState('')
@@ -44,7 +45,7 @@ export default function Chat({ onCreated }) {
 
   return (
     <section style={{ marginBottom: 24 }}>
-      <h2>Chat</h2>
+      <h2>{t(lang, 'chat')}</h2>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -53,8 +54,8 @@ export default function Chat({ onCreated }) {
         placeholder="Factura a Juan por 5 horas de consultoria a $50/hora"
       />
       <div style={{ marginTop: 8 }}>
-        <button onClick={handleExtract}>Extract</button>
-        {extracted && <button onClick={handleCreate} style={{ marginLeft: 8 }}>Create Invoice</button>}
+        <button onClick={handleExtract}>{t(lang, 'extract')}</button>
+        {extracted && <button onClick={handleCreate} style={{ marginLeft: 8 }}>{t(lang, 'createInvoice')}</button>}
       </div>
       {extracted && (
         <pre style={{ background: '#f5f5f5', padding: 8, marginTop: 8 }}>
