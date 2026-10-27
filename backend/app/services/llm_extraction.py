@@ -7,7 +7,7 @@ SYSTEM_PROMPT = (
     "You extract invoice data from a natural-language request. "
     "Respond ONLY with valid JSON matching this schema: "
     '{"client_name": str, "client_email": str or null, "currency": str, '
-    '"tax_rate": number, "items": [{"description": str, "quantity": number, "unit_price": number}]}. '
+    '"tax_rate": number, "items": [{"description": str, "quantity": number, "unit_price": number, "category": str}]}. '
     "If email is missing, use null. Default currency USD, tax_rate 0."
 )
 
@@ -28,7 +28,7 @@ def extract_invoice(text: str) -> dict[str, Any]:
             "client_email": "juan@example.com",
             "currency": "USD",
             "tax_rate": 0.18,
-            "items": [{"description": "Consultoria", "quantity": 5, "unit_price": 50.0}],
+            "items": [{"description": "Consultoria", "quantity": 5, "unit_price": 50.0, "category": "services"}],
         }
     resp = _client().chat.completions.create(
         model=settings.llm_model,
