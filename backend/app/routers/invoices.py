@@ -4,10 +4,11 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response, StreamingResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import AuditLog, Client, Invoice, InvoiceStatus, LineItem
+from ..models import AuditLog, Client, Invoice, InvoiceStatus, LineItem, Payment
 from ..schemas import InvoiceCreate, InvoiceOut
 from ..services.email import send_invoice_email
 from ..services.llm_extraction import generate_reminder_message
@@ -192,3 +193,22 @@ def remind(invoice_id: int, db: Session = Depends(get_db)) -> dict:
         pdf,
     )
     return {"status": "sent", "risk_score": risk}
+
+
+class PaymentPayload(BaseModel):
+    amount: float
+    status: str = "completed"
+
+
+@router.post("/{invoice_id}/payments")
+def record_payment(invoice_id: int, payload: PaymentPayload, db: Session = Depends(get_db)) -> dict:
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if invoice is None:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    payment = Payment(invoice_id=invoice.id, amount=payload.amount, status=payload.status)
+    db.add(payment)
+    paid_total = sum(p.amount for p in invoice.payments) + payload.amount
+    if paid_total >= invoice.total:
+        invoice.status = InvoiceStatus.paid
+    db.commit()
+    return {"status": invoice.status.value, "paid_total": round(paid_total, 2), "total": invoice.total}

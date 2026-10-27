@@ -109,6 +109,22 @@ class Reminder(Base):
     sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
+class RecurringInvoice(Base):
+    __tablename__ = "recurring_invoices"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"), nullable=False)
+    description: Mapped[str] = mapped_column(String(512), nullable=False)
+    amount: Mapped[float] = mapped_column(Float, default=0.0)
+    currency: Mapped[str] = mapped_column(String(8), default="USD")
+    frequency: Mapped[str] = mapped_column(String(16), default="monthly")  # weekly/monthly
+    next_run: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    client: Mapped[Client] = relationship()
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 

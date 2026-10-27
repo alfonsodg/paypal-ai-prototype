@@ -11,6 +11,7 @@ from .routers.cashflow import router as cashflow_router
 from .routers.extraction import router as extraction_router
 from .routers.invoices import router as invoices_router
 from .routers.queries import router as queries_router
+from .routers.recurring import router as recurring_router
 from .routers.webhooks import router as webhooks_router
 
 Base.metadata.create_all(bind=engine)
@@ -33,6 +34,7 @@ app.include_router(analytics_router)
 app.include_router(audit_router)
 app.include_router(clients_router)
 app.include_router(queries_router)
+app.include_router(recurring_router)
 
 
 @app.on_event("startup")
