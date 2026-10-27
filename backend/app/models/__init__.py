@@ -109,6 +109,18 @@ class Reminder(Base):
     sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
+class CreditNote(Base):
+    __tablename__ = "credit_notes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    invoice_id: Mapped[int] = mapped_column(ForeignKey("invoices.id"), nullable=False)
+    amount: Mapped[float] = mapped_column(Float, default=0.0)
+    reason: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    invoice: Mapped[Invoice] = relationship()
+
+
 class RecurringInvoice(Base):
     __tablename__ = "recurring_invoices"
 

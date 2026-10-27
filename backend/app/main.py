@@ -1,5 +1,9 @@
-from fastapi import FastAPI
+import time
+from collections import defaultdict
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from .db import Base, engine
@@ -35,6 +39,20 @@ app.include_router(audit_router)
 app.include_router(clients_router)
 app.include_router(queries_router)
 app.include_router(recurring_router)
+
+_rate_bucket: dict[str, list[float]] = defaultdict(list)
+
+
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    window = [t for t in _rate_bucket[client_ip] if now - t < 60]
+    if len(window) >= 120:
+        return JSONResponse(status_code=429, content={"error": "rate limit exceeded"})
+    window.append(now)
+    _rate_bucket[client_ip] = window
+    return await call_next(request)
 
 
 @app.on_event("startup")

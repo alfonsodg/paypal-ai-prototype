@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import AuditLog, Client, Invoice, InvoiceStatus, LineItem, Payment
+from ..models import AuditLog, Client, CreditNote, Invoice, InvoiceStatus, LineItem, Payment
 from ..schemas import InvoiceCreate, InvoiceOut
 from ..services.email import send_invoice_email
 from ..services.llm_extraction import generate_reminder_message
@@ -200,6 +200,11 @@ class PaymentPayload(BaseModel):
     status: str = "completed"
 
 
+class CreditNotePayload(BaseModel):
+    amount: float
+    reason: str | None = None
+
+
 @router.post("/{invoice_id}/payments")
 def record_payment(invoice_id: int, payload: PaymentPayload, db: Session = Depends(get_db)) -> dict:
     invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
@@ -212,3 +217,15 @@ def record_payment(invoice_id: int, payload: PaymentPayload, db: Session = Depen
         invoice.status = InvoiceStatus.paid
     db.commit()
     return {"status": invoice.status.value, "paid_total": round(paid_total, 2), "total": invoice.total}
+
+
+@router.post("/{invoice_id}/credit-note")
+def create_credit_note(invoice_id: int, payload: CreditNotePayload, db: Session = Depends(get_db)) -> dict:
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if invoice is None:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    cn = CreditNote(invoice_id=invoice.id, amount=payload.amount, reason=payload.reason)
+    db.add(cn)
+    db.commit()
+    db.refresh(cn)
+    return {"id": cn.id, "amount": cn.amount, "reason": cn.reason}
